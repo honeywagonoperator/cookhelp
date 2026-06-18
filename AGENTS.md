@@ -46,10 +46,10 @@ UX/Флоу: `telegram-userflow.md`
 → записать в `SESSION.md`
 
 **Новый запрос / идея / фича:**
-- `github_create_issue` — создать issue с Acceptance Criteria, labels, assignee
+- создать issue с Acceptance Criteria, labels, assignee
 
 **Запрос на выполнение существующей фичи:**
-- `github_search_issues` / `github_get_issue` — прочитать issue
+- прочитать issue
 - Если issue не найдено — уточнить у пользователя, создать новое
 
 ### 2. Создание feature branch + Draft PR
@@ -57,13 +57,13 @@ UX/Флоу: `telegram-userflow.md`
 `load skill github`:
 
 ```
-github_create_branch({ branch: "feat/<name>", from_branch: "main" })
-github_create_pull_request({ head: "feat/<name>", base: "main", draft: true })
+({ branch: "feat/<name>", from_branch: "main" })
+({ head: "feat/<name>", base: "main", draft: true })
 ```
 
 **Жизненно важно:** каждая фича — отдельная ветка. Никаких коммитов в main.
 
-> **Note:** GitHub MCP server не работает — используй встроенные tools `github_create_branch`, `github_push_files`, `github_create_pull_request` напрямую, `load skill github` не требуется.
+> **Note:** GitHub MCP server не работает — используй CLI команду GH
 
 ### 3. Планирование
 

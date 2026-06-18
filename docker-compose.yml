@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: cookhelp-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-cookhelp}
+      POSTGRES_USER: ${POSTGRES_USER:-cookhelp}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cookhelp}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-cookhelp} -d ${POSTGRES_DB:-cookhelp}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cookhelp-app
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-cookhelp}:${POSTGRES_PASSWORD:-cookhelp}@postgres:5432/${POSTGRES_DB:-cookhelp}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
+      BOT_TOKEN: ${BOT_TOKEN}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    volumes:
+      - ./app:/app/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: >
+      sh -c "alembic upgrade head && python -m app.main"
+
+volumes:
+  postgres_data:
