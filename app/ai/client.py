@@ -30,7 +30,7 @@ class OpenRouterClient:
         self.client = AsyncOpenAI(
             base_url="https://openrouter.ai/api/v1",
             api_key=self.api_key,
-            http_client=httpx.AsyncClient(timeout=60.0),
+            http_client=httpx.AsyncClient(timeout=60.0, trust_env=False),
         )
         
         self.default_model = "nvidia/llama-nemotron-embed-vl-1b-v2:free"
