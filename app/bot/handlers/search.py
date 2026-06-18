@@ -56,16 +56,16 @@ async def search_query(message: Message, state: FSMContext) -> None:
             )
             return
 
-        lines = []
         buttons = []
-        for i, r in enumerate(results[:10], 1):
-            emoji = "🥇🥈🥉" if i <= 3 else f"{i}."
-            label = f"{emoji} {r.title}"
-            lines.append(label)
+        for i, r in enumerate(results[:10]):
+            buttons.append([InlineKeyboardButton(
+                text=f"{i + 1}. {r.title}",
+                callback_data=f"recipe:{r.id}",
+            )])
 
         await message.answer(
-            "📋 <b>Результаты поиска:</b>\n\n" + "\n".join(lines),
-            reply_markup=main_menu,
+            "📋 <b>Результаты поиска:</b>",
+            reply_markup=InlineKeyboardMarkup(inline_keyboard=buttons),
         )
 
     except Exception as e:

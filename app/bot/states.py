@@ -11,3 +11,7 @@ class SearchStates(StatesGroup):
 
 class FreeInputStates(StatesGroup):
     waiting_for_input = State()
+
+
+class EditRecipeStates(StatesGroup):
+    waiting_for_instruction = State()

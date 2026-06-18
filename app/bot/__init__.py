@@ -6,7 +6,7 @@ from aiogram.enums import ParseMode
 
 from app.core.config import settings
 
-from .handlers import start, create_recipe, search, free_input
+from .handlers import start, create_recipe, search, free_input, recipe_actions
 from .middlewares import LoggingMiddleware, ErrorHandlingMiddleware
 
 logger = logging.getLogger(__name__)
@@ -21,6 +21,7 @@ dp.include_router(start.router)
 dp.include_router(create_recipe.router)
 dp.include_router(search.router)
 dp.include_router(free_input.router)
+dp.include_router(recipe_actions.router)
 
 dp.message.middleware(LoggingMiddleware())
 dp.message.middleware(ErrorHandlingMiddleware())
