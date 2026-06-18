@@ -15,20 +15,13 @@ depends_on = None
 
 
 def upgrade() -> None:
-    op.drop_index('idx_recipes_embedding_hnsw', table_name='recipes')
+    op.execute('DROP INDEX IF EXISTS idx_recipes_embedding_hnsw')
+    op.execute('DROP INDEX IF EXISTS idx_recipes_embedding_ivfflat')
     op.drop_column('recipes', 'embedding')
     op.add_column('recipes', sa.Column('embedding', Vector(2048), nullable=True))
 
-    op.execute('''
-        CREATE INDEX IF NOT EXISTS idx_recipes_embedding_hnsw
-        ON recipes
-        USING hnsw (embedding vector_cosine_ops)
-        WITH (m = 16, ef_construction = 64)
-    ''')
-
 
 def downgrade() -> None:
-    op.drop_index('idx_recipes_embedding_hnsw', table_name='recipes')
     op.drop_column('recipes', 'embedding')
     op.add_column('recipes', sa.Column('embedding', Vector(1024), nullable=True))
 
