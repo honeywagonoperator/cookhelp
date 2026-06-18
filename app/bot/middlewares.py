@@ -20,15 +20,19 @@ class LoggingMiddleware(BaseMiddleware):
 
 
 class ErrorHandlingMiddleware(BaseMiddleware):
-    async def __call__(self, handler, event: Message, data: dict):
+    async def __call__(self, handler, event: Message | CallbackQuery, data: dict):
         try:
             return await handler(event, data)
         except Exception as e:
-            logger.error(
-                "Unhandled error: %s\n%s",
-                e,
-                traceback.format_exc(),
-            )
-            await event.answer(
-                "❌ Произошла ошибка. Пожалуйста, попробуйте ещё раз.",
-            )
+            user = event.from_user
+            logger.exception("Unhandled error from user %s (%s): %s", user.full_name, user.id, e)
+
+            state = data.get("state")
+            if state:
+                await state.clear()
+
+            text = "❌ Произошла ошибка. Пожалуйста, попробуйте ещё раз."
+            if isinstance(event, CallbackQuery):
+                await event.answer(text, show_alert=True)
+            else:
+                await event.answer(text)

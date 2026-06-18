@@ -1,5 +1,7 @@
+import logging
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import Field
+from pydantic import Field, field_validator
 
 
 class Settings(BaseSettings):
@@ -29,6 +31,14 @@ class Settings(BaseSettings):
 
     # App
     log_level: str = Field(default="INFO", validation_alias="LOG_LEVEL")
+
+    @field_validator("log_level")
+    @classmethod
+    def validate_log_level(cls, v: str) -> str:
+        valid = logging.getLevelNamesMapping()
+        if v.upper() not in valid:
+            raise ValueError(f"Invalid log level: {v}. Valid: {', '.join(valid)}")
+        return v.upper()
     environment: str = Field(default="development", validation_alias="ENVIRONMENT")
 
     # Embedding

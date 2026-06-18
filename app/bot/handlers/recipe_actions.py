@@ -157,7 +157,7 @@ async def edit_recipe_apply(message: Message, state: FSMContext) -> None:
                 await message.answer("❌ Не удалось обновить рецепт.", reply_markup=main_menu)
 
     except Exception as e:
-        logger.error(f"Edit error: {e}")
+        logger.exception("Edit error: %s", e)
         await message.answer(
             "❌ Ошибка при редактировании. Попробуйте ещё раз.",
             reply_markup=main_menu,

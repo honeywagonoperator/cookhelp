@@ -83,7 +83,7 @@ async def free_input_handle(message: Message, state: FSMContext) -> None:
                 reply_markup=main_menu,
             )
     except Exception as e:
-        logger.error(f"Free input error: {e}")
+        logger.exception("Free input error: %s", e)
         await progress.delete()
         await message.answer(
             "❌ Ошибка при обработке запроса. Попробуйте ещё раз.",

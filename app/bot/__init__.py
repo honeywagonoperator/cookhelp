@@ -3,6 +3,7 @@ import logging
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
+from aiogram.types import ErrorEvent
 
 from app.core.config import settings
 
@@ -25,6 +26,13 @@ dp.include_router(recipe_actions.router)
 
 dp.message.middleware(LoggingMiddleware())
 dp.message.middleware(ErrorHandlingMiddleware())
+dp.callback_query.middleware(ErrorHandlingMiddleware())
+
+
+@dp.errors()
+async def global_error_handler(event: ErrorEvent) -> bool:
+    logger.exception("Global error: %s", event.exception)
+    return True
 
 
 async def start_bot() -> None:
@@ -41,4 +49,6 @@ async def stop_bot() -> None:
     if settings.bot_use_webhook:
         await bot.delete_webhook()
     await bot.session.close()
+    from app.ai.client import close_ai_client
+    await close_ai_client()
     logger.info("Bot stopped")
