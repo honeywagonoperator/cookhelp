@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field, ConfigDict
 
 
 class RecipeSource(BaseModel):
-    type: str = Field(..., pattern="^(text|website|youtube)$")
+    type: str = Field(..., pattern="^(text|website)$")
     url: str | None = None
 
 

@@ -19,8 +19,7 @@
 Пользователь отправляет:
 
 - текст рецепта;
-- URL страницы с рецептом;
-- URL YouTube-видео с рецептом.
+- URL сайта с рецептом.
 
 Система:
 
@@ -220,11 +219,7 @@ project-root/
 - trafilatura
 - beautifulsoup4
 
-### YouTube Parser
 
-Инструменты:
-
-- youtube-transcript-api
 
 ---
 
@@ -255,8 +250,8 @@ project-root/
     "ужин"
   ],
   "source": {
-    "type": "youtube",
-    "url": "https://youtube.com/..."
+    "type": "website",
+    "url": "https://example.com/recipe..."
   },
   "embedding": [],
   "created_at": "timestamp",
@@ -338,7 +333,7 @@ project-root/
 3. Telegram Bot
 4. Добавление рецептов текстом
 5. Добавление рецептов по URL
-6. Импорт из YouTube
+6. ~~Импорт из YouTube~~ (отменено)
 7. AI-нормализация
 8. Embeddings + pgvector
 9. AI-поиск
