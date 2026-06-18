@@ -24,6 +24,8 @@ class Settings(BaseSettings):
 
     # Telegram
     bot_token: str = Field(default="", validation_alias="BOT_TOKEN")
+    bot_use_webhook: bool = Field(default=False, validation_alias="BOT_USE_WEBHOOK")
+    bot_webhook_url: str = Field(default="", validation_alias="BOT_WEBHOOK_URL")
 
     # App
     log_level: str = Field(default="INFO", validation_alias="LOG_LEVEL")

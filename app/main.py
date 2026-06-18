@@ -21,8 +21,28 @@ async def lifespan(app: FastAPI):
     logger.info("Starting application...")
     await init_db()
     logger.info("Database initialized")
+
+    from app.bot import bot, dp, start_bot, stop_bot
+
+    await start_bot()
+    logger.info("Bot started")
+
+    polling_task = None
+    if not settings.bot_use_webhook:
+        polling_task = asyncio.create_task(dp.start_polling(bot))
+        logger.info("Polling started")
+
     yield
-    logger.info("Shutting down...")
+
+    if polling_task:
+        polling_task.cancel()
+        try:
+            await polling_task
+        except asyncio.CancelledError:
+            pass
+
+    await stop_bot()
+    logger.info("Bot stopped")
     await close_db()
     logger.info("Database connections closed")
 
