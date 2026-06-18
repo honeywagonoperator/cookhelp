@@ -127,7 +127,8 @@ async def edit_recipe_apply(message: Message, state: FSMContext) -> None:
                 await message.answer("❌ Рецепт не найден.", reply_markup=main_menu)
                 return
 
-            recipe_dict = recipe.model_dump()
+            import json
+            recipe_dict = json.loads(recipe.model_dump_json())
             edited = await ai_service.edit_recipe(recipe_dict, instruction)
             normalized = await ai_service.normalize_recipe(edited)
 
