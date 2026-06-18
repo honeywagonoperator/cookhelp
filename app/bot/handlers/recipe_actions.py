@@ -164,7 +164,8 @@ async def edit_recipe_apply(message: Message, state: FSMContext) -> None:
 
 @router.callback_query(F.data == "back_to_menu")
 async def back_to_menu(callback: CallbackQuery) -> None:
-    await callback.message.edit_text(
+    await callback.message.delete()
+    await callback.message.answer(
         "👋 Главное меню",
         reply_markup=main_menu,
     )
