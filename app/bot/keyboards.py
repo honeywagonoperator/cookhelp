@@ -4,6 +4,7 @@ main_menu = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text="Создать рецепт")],
         [KeyboardButton(text="Найти рецепт")],
+        [KeyboardButton(text="Мои рецепты")],
         [KeyboardButton(text="Свободный ввод")],
         [KeyboardButton(text="Помощь")],
     ],

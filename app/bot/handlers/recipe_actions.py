@@ -45,8 +45,11 @@ async def show_recipe(callback: CallbackQuery) -> None:
 
     buttons = InlineKeyboardMarkup(inline_keyboard=[
         [
-            InlineKeyboardButton(text="👁 Показать шаги", callback_data=f"steps:{recipe.id}"),
-            InlineKeyboardButton(text="✏️ Редактировать", callback_data=f"edit:{recipe.id}"),
+            InlineKeyboardButton(text="👁 Шаги", callback_data=f"steps:{recipe.id}"),
+            InlineKeyboardButton(text="✏️ Правка", callback_data=f"edit:{recipe.id}"),
+        ],
+        [
+            InlineKeyboardButton(text="🗑 Удалить", callback_data=f"delete:{recipe.id}"),
         ],
         [InlineKeyboardButton(text="🔙 Назад", callback_data="back_to_menu")],
     ])
@@ -76,6 +79,7 @@ async def show_steps(callback: CallbackQuery) -> None:
 
     buttons = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="✏️ Редактировать", callback_data=f"edit:{recipe.id}")],
+        [InlineKeyboardButton(text="🗑 Удалить", callback_data=f"delete:{recipe.id}")],
         [InlineKeyboardButton(text="🔙 Назад", callback_data=f"recipe:{recipe.id}")],
     ])
 
@@ -168,5 +172,107 @@ async def back_to_menu(callback: CallbackQuery) -> None:
     await callback.message.answer(
         "👋 Главное меню",
         reply_markup=main_menu,
+    )
+    await callback.answer()
+
+
+@router.message(F.text == "Мои рецепты")
+async def list_recipes(message: Message) -> None:
+    await _show_recipe_page(message, page=1)
+
+
+@router.callback_query(F.data.startswith("list:"))
+async def list_recipes_page(callback: CallbackQuery) -> None:
+    page = int(callback.data.split(":")[1])
+    await _show_recipe_page(callback.message, page=page, edit=True)
+    await callback.answer()
+
+
+async def _show_recipe_page(target, page: int, edit: bool = False) -> None:
+    page_size = 5
+
+    async with async_session_maker() as session:
+        repository = RecipeRepository(session)
+        service = RecipeService(repository)
+        paginated = await service.list_recipes(page=page, page_size=page_size)
+
+    if not paginated.items:
+        text = "📭 У вас пока нет рецептов.\n\nНажмите «Создать рецепт» чтобы добавить первый!"
+        if edit:
+            await target.delete()
+            await target.answer(text, reply_markup=main_menu)
+        else:
+            await target.answer(text, reply_markup=main_menu)
+        return
+
+    text = f"📋 <b>Мои рецепты</b> (страница {page}/{paginated.total_pages})\n\n"
+    buttons = []
+
+    for r in paginated.items:
+        text += f"• {r.title}\n"
+        buttons.append([InlineKeyboardButton(
+            text=f"📖 {r.title}",
+            callback_data=f"recipe:{r.id}",
+        )])
+
+    nav_buttons = []
+    if page > 1:
+        nav_buttons.append(InlineKeyboardButton(text="⬅️ Назад", callback_data=f"list:{page - 1}"))
+    if page < paginated.total_pages:
+        nav_buttons.append(InlineKeyboardButton(text="Вперёд ➡️", callback_data=f"list:{page + 1}"))
+
+    if nav_buttons:
+        buttons.append(nav_buttons)
+
+    markup = InlineKeyboardMarkup(inline_keyboard=buttons)
+
+    if edit:
+        await target.edit_text(text, reply_markup=markup)
+    else:
+        await target.answer(text, reply_markup=markup)
+
+
+@router.callback_query(F.data.startswith("delete_confirm:"))
+async def delete_recipe_confirm(callback: CallbackQuery) -> None:
+    recipe_id = callback.data.split(":")[1]
+
+    async with async_session_maker() as session:
+        repository = RecipeRepository(session)
+        service = RecipeService(repository)
+        deleted = await service.delete_recipe(recipe_id)
+        await session.commit()
+
+    if deleted:
+        await callback.message.edit_text("🗑 Рецепт удалён.")
+        await _show_recipe_page(callback.message, page=1, edit=True)
+    else:
+        await callback.message.edit_text("❌ Рецепт не найден.")
+    await callback.answer()
+
+
+@router.callback_query(F.data.startswith("delete:"))
+async def delete_recipe_prompt(callback: CallbackQuery) -> None:
+    recipe_id = callback.data.split(":")[1]
+
+    async with async_session_maker() as session:
+        repository = RecipeRepository(session)
+        service = RecipeService(repository)
+        recipe = await service.get_recipe(recipe_id)
+
+    if not recipe:
+        await callback.message.edit_text("❌ Рецепт не найден.")
+        await callback.answer()
+        return
+
+    buttons = InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(text="✅ Да, удалить", callback_data=f"delete_confirm:{recipe_id}"),
+            InlineKeyboardButton(text="❌ Нет", callback_data=f"recipe:{recipe_id}"),
+        ],
+    ])
+
+    await callback.message.edit_text(
+        f"🗑 Удалить рецепт «{recipe.title}»?\n\nЭто действие нельзя отменить.",
+        reply_markup=buttons,
     )
     await callback.answer()
