@@ -90,3 +90,26 @@
 
 ### Note on embedding dimension:
 Need to test `nvidia/llama-nemotron-embed-vl-1b-v2:free` via OpenRouter to confirm actual dimension (likely 1024 or 2048), then update migration if needed.
+
+
+## 2026-06-18 — Started #19: Telegram bot setup with aiogram 3
+
+**Action:** Created feature branch `feat/telegram-bot`, implemented bot foundation, created draft PR #24
+
+**Files created:**
+- `app/bot/__init__.py` — Bot + Dispatcher setup, polling/webhook, start/stop
+- `app/bot/states.py` — FSM: CreateRecipeStates, SearchStates, FreeInputStates
+- `app/bot/keyboards.py` — Main menu keyboard (4 buttons)
+- `app/bot/handlers/start.py` — /start, /help, main menu
+- `app/bot/handlers/create_recipe.py` — "Создать рецепт" FSM flow
+- `app/bot/handlers/search.py` — "Найти рецепт" FSM flow
+- `app/bot/handlers/free_input.py` — "Свободный ввод" FSM flow
+- `app/bot/middlewares.py` — Logging + error handling middlewares
+
+**Files modified:**
+- `app/core/config.py` — Added `bot_use_webhook`, `bot_webhook_url`
+- `app/main.py` — Bot lifecycle in FastAPI lifespan
+
+**PR:** https://github.com/honeywagonoperator/cookhelp/pull/24 (draft)
+
+**Next:** Need user approval → merge → proceed to #12 (Embeddings + pgvector)

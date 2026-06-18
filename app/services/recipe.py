@@ -1,22 +1,38 @@
+import logging
+from math import ceil
 from typing import Sequence
 from uuid import UUID
-from math import ceil
 
+from app.ai.service import AIService
+from app.models.recipe import Recipe
 from app.repositories.recipe import RecipeRepository
 from app.schemas.recipe import (
-    RecipeCreate,
-    RecipeUpdate,
-    RecipeResponse,
     PaginatedRecipes,
+    RecipeCreate,
+    RecipeResponse,
+    RecipeUpdate,
 )
-from app.models.recipe import Recipe
+
+logger = logging.getLogger(__name__)
 
 
 class RecipeService:
-    def __init__(self, repository: RecipeRepository):
+    def __init__(self, repository: RecipeRepository, ai_service: AIService | None = None):
         self.repository = repository
+        self.ai_service = ai_service
 
     async def create_recipe(self, data: RecipeCreate) -> RecipeResponse:
+        recipe_dict = data.model_dump()
+
+        if self.ai_service:
+            tags = await self.ai_service.generate_tags(recipe_dict)
+            if tags:
+                data.tags = tags
+                recipe_dict["tags"] = tags
+
+            embedding = await self.ai_service.generate_embedding_for_recipe(recipe_dict)
+            data.embedding = embedding
+
         recipe = await self.repository.create(
             title=data.title,
             description=data.description,
@@ -60,6 +76,15 @@ class RecipeService:
         source = update_data.pop("source", None)
         if source:
             update_data["source"] = source.model_dump()
+
+        if self.ai_service and update_data:
+            recipe_dict = update_data.copy()
+            embedding = await self.ai_service.generate_embedding_for_recipe(recipe_dict)
+            update_data["embedding"] = embedding
+
+            tags = await self.ai_service.generate_tags(recipe_dict)
+            if tags:
+                update_data["tags"] = tags
 
         recipe = await self.repository.update(recipe_id, **update_data)
         if not recipe:

@@ -30,11 +30,11 @@ class OpenRouterClient:
         self.client = AsyncOpenAI(
             base_url="https://openrouter.ai/api/v1",
             api_key=self.api_key,
-            http_client=httpx.AsyncClient(timeout=60.0),
+            http_client=httpx.AsyncClient(timeout=60.0, trust_env=False),
         )
         
         self.default_model = "nvidia/llama-nemotron-embed-vl-1b-v2:free"
-        self.chat_model = "anthropic/claude-3.5-sonnet"
+        self.chat_model = "nex-agi/nex-n2-pro:free"
         self.embedding_model = settings.embedding_model
 
     @retry(
@@ -90,19 +90,25 @@ class OpenRouterClient:
     @retry(
         wait=wait_exponential(multiplier=1, min=2, max=10),
         stop=stop_after_attempt(3),
-        retry=retry_if_exception_type((httpx.TimeoutException, httpx.ConnectError)),
+        retry=retry_if_exception_type((httpx.TimeoutException, httpx.ConnectError, httpx.HTTPStatusError)),
     )
     async def create_embedding(self, text: str, model: Optional[str] = None) -> list[float]:
         model = model or self.embedding_model
         
         try:
-            response = await self.client.embeddings.create(
-                model=model,
-                input=text,
-            )
-            
-            embedding = response.data[0].embedding
-            tokens_used = response.usage.total_tokens if response.usage else 0
+            async with httpx.AsyncClient(timeout=60.0, trust_env=False) as http:
+                resp = await http.post(
+                    "https://openrouter.ai/api/v1/embeddings",
+                    headers={
+                        "Authorization": f"Bearer {self.api_key}",
+                        "Content-Type": "application/json",
+                    },
+                    json={"model": model, "input": text},
+                )
+                resp.raise_for_status()
+                data = resp.json()
+                embedding = data["data"][0]["embedding"]
+                tokens_used = data.get("usage", {}).get("total_tokens", 0)
             
             logger.info(
                 "OpenRouter embedding",

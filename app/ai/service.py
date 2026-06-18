@@ -144,7 +144,7 @@ class AIService:
         user_content = prompt.replace("{{recipe_json}}", recipe_json)
         
         messages = [
-            {"role": "system", "content": "You are a recipe tagging expert. Return only JSON array of tags."},
+            {"role": "system", "content": "You are a recipe tagging expert. Return tags as a JSON object with a single key 'tags'."},
             {"role": "user", "content": user_content},
         ]
         
@@ -155,7 +155,8 @@ class AIService:
         )
         
         try:
-            tags = json.loads(response.content)
+            data = json.loads(response.content)
+            tags = data.get("tags", data.get("result", data.get("data", [])))
             return tags if isinstance(tags, list) else []
         except json.JSONDecodeError:
             logger.warning("Failed to parse tags response")

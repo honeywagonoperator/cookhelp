@@ -31,7 +31,7 @@ class Recipe(Base):
         default=dict,
     )
     embedding: Mapped[list[float] | None] = mapped_column(
-        Vector(1024),
+        Vector(2048),
         nullable=True,
     )
     created_at: Mapped[datetime] = mapped_column(

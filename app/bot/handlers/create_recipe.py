@@ -15,8 +15,7 @@ async def create_recipe_start(message: Message, state: FSMContext) -> None:
     await message.answer(
         "Отправьте:\n\n"
         "• текст рецепта\n"
-        "• ссылку на сайт с рецептом\n"
-        "• ссылку на YouTube-видео",
+        "• ссылку на сайт с рецептом",
         reply_markup=ReplyKeyboardRemove(),
     )
 
@@ -24,10 +23,8 @@ async def create_recipe_start(message: Message, state: FSMContext) -> None:
 @router.message(StateFilter(CreateRecipeStates.waiting_for_input))
 async def create_recipe_input(message: Message, state: FSMContext) -> None:
     if message.text and message.text.startswith("http"):
-        source_type = "youtube" if "youtube.com" in message.text.lower() or "youtu.be" in message.text.lower() else "website"
         await message.answer(
-            f"⏳ Обрабатываю ссылку...\n"
-            f"Тип: {'YouTube' if source_type == 'youtube' else 'сайт'}",
+            "⏳ Обрабатываю ссылку...",
             reply_markup=main_menu,
         )
     elif message.text:
