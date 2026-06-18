@@ -39,11 +39,15 @@ class TextRecipeParser:
         return normalized
 
 
-async def process_text_recipe(text: str, user_id: int, session) -> dict[str, Any]:
+async def process_text_recipe(text: str) -> dict[str, Any]:
     from app.ai.service import AIService
+    from app.database.connection import async_session_maker
 
-    repository = RecipeRepository(session)
     ai_service = AIService()
-    service = RecipeService(repository, ai_service)
-    parser = TextRecipeParser(service)
-    return await parser.parse_and_save(text, user_id)
+    async with async_session_maker() as session:
+        repository = RecipeRepository(session)
+        service = RecipeService(repository, ai_service)
+        parser = TextRecipeParser(service)
+        result = await parser.parse_and_save(text, 0)
+        await session.commit()
+        return result
