@@ -32,7 +32,7 @@ class Settings(BaseSettings):
     environment: str = Field(default="development", validation_alias="ENVIRONMENT")
 
     # Embedding
-    embedding_dimension: int = Field(default=1024, validation_alias="EMBEDDING_DIMENSION")
+    embedding_dimension: int = Field(default=2048, validation_alias="EMBEDDING_DIMENSION")
     embedding_model: str = Field(
         default="nvidia/llama-nemotron-embed-vl-1b-v2:free",
         validation_alias="EMBEDDING_MODEL",
