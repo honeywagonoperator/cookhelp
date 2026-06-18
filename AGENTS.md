@@ -26,7 +26,7 @@ UX/Флоу: `telegram-userflow.md`
 
 Прочитать последние записи: `read("SESSION.md")`
 
-Перед каждым шагом воркфлоу — **сначала запиши действие в SESSION.md**, потом выполняй.
+Перед каждым значимым действием — **сначала запиши в SESSION.md**, потом выполняй.
 
 ---
 
@@ -55,16 +55,15 @@ UX/Флоу: `telegram-userflow.md`
 
 ### 2. Создание feature branch + Draft PR
 
-обязательно `load skill github`:
-
-```
-({ branch: "feat/<name>", from_branch: "main" })
-({ head: "feat/<name>", base: "main", draft: true })
+```bash
+git checkout -b feat/<name> main
+git push -u origin feat/<name>
+gh pr create --title "feat: <name>" --body "" --base main --head feat/<name> --draft
 ```
 
 **Жизненно важно:** каждая фича — отдельная ветка. Никаких коммитов в main.
 
-> **Note:** GitHub MCP server не работает — используй CLI команду GH
+Подробнее — в github skill.
 
 ### 3. Планирование
 
@@ -84,12 +83,11 @@ UX/Флоу: `telegram-userflow.md`
 ### 4. Реализация (код)
 
 → записать в `SESSION.md`
-`load skill vibe-coding`:
 
-- **context7** — для документации библиотек (если нужен новый пакет или API)
-- **serena** — для навигации по коду и редактирования
+Следовать **vibe-coding workflow** (шаг 3): контекст оттуда уже загружен.
+
 - Писать код в соответствии с архитектурой проекта (см. `architecture.md`)
-- Коммиты через `load skill github` → `github_push_files` (формат сообщений — в github skill)
+- Коммиты: `git add <files> && git commit -m "..." && git push` (формат сообщений — в github skill)
 
 ### 5. Тестирование
 
@@ -119,19 +117,14 @@ UX/Флоу: `telegram-userflow.md`
 → записать в `SESSION.md`
 `load skill github`:
 
-```
-github_merge_pull_request({ merge_method: "squash" })
+```bash
+gh pr merge <pr-number> --squash --delete-branch
 ```
 
 ### 8. Rollback (если что-то пошло не так)
 
 → записать в `SESSION.md`
-Если после мержа обнаружена проблема:
-
-1. `github_create_branch({ branch: "fix/rollback-<description>", from_branch: "main" })`
-2. Откатить изменения (revert коммит через `github_push_files`)
-3. `github_create_pull_request({ ... })` → `github_merge_pull_request`
-4. Создать новый issue на исправление проблемы
+Если после мержа обнаружена проблема — следовать **Rollback** в github skill.
 
 ---
 
@@ -149,15 +142,19 @@ github_merge_pull_request({ merge_method: "squash" })
 
 ## Implementation Plan (from architecture.md)
 
-1. PostgreSQL + SQLAlchemy
-2. CRUD рецептов
-3. Telegram Bot
-4. Добавление рецептов текстом
-5. Добавление рецептов по URL
-6. Импорт из YouTube
-7. AI-нормализация
-8. Embeddings + pgvector
-9. AI-поиск
-10. AI-редактирование
+1. ✅ PostgreSQL + SQLAlchemy
+2. ✅ CRUD рецептов
+3. ✅ Telegram Bot
+4. ✅ Добавление рецептов текстом
+5. ✅ Добавление рецептов по URL
+6. ❌ Импорт из YouTube (удалён из скоупа)
+7. ✅ AI-нормализация
+8. ✅ Embeddings + pgvector
+9. ✅ AI-поиск
+10. 🔄 AI-редактирование (PR #28)
+11. ⬜ Free input mode / intent routing
+12. ⬜ Список рецептов и управление
+13. ⬜ Тесты
+14. ⬜ Полировка / багфиксы
 
 *Не пытаться реализовать весь проект одной итерацией.*

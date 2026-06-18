@@ -69,7 +69,7 @@ async def search_query(message: Message, state: FSMContext) -> None:
         )
 
     except Exception as e:
-        logger.error(f"Search error: {e}")
+        logger.exception("Search error: %s", e)
         await message.answer(
             "❌ Ошибка при поиске. Попробуйте ещё раз.",
             reply_markup=main_menu,

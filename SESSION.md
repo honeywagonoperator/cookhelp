@@ -113,3 +113,64 @@ Need to test `nvidia/llama-nemotron-embed-vl-1b-v2:free` via OpenRouter to confi
 **PR:** https://github.com/honeywagonoperator/cookhelp/pull/24 (draft)
 
 **Next:** Need user approval → merge → proceed to #12 (Embeddings + pgvector)
+
+
+## 2026-06-19 — #16: Recipe list, pagination, and delete
+
+**Action:** Added «Мои рецепты» button to main menu, paginated list (5/page), delete with confirmation.
+
+**Files changed:**
+- `app/bot/keyboards.py` — Added «Мои рецепты» button
+- `app/bot/handlers/recipe_actions.py` — Added handlers: `list_recipes`, `list_recipes_page`, `_show_recipe_page`, `delete_recipe_prompt`, `delete_recipe_confirm`; added delete buttons to recipe card and steps views
+
+**Trade-offs:**
+- `edit_text` can't set `ReplyKeyboardMarkup`, so on empty list with `edit=True` the message is deleted and a new message is sent instead
+- Callback data uses string UUIDs (same pattern as existing code); SQLAlchemy handles string→UUID implicitly
+
+**PR:** https://github.com/honeywagonoperator/cookhelp/pull/29 (draft)
+
+
+## 2026-06-19 — #17: Unit tests for core layers
+
+**Action:** Added 47 unit tests covering schemas, AI service, recipe service, search, and text parser.
+
+**Files created:**
+- `pytest.ini` — asyncio_mode = auto
+- `tests/conftest.py` — mock AI client, mock repository, sample recipe fixtures
+- `tests/test_schemas.py` (13 tests) — RecipeCreate/Update/Response, PaginatedRecipes, RecipeSource
+- `tests/test_ai_service.py` (11 tests) — extract, normalize, classify, edit, rerank, tags, embedding
+- `tests/test_recipe_service.py` (11 tests) — CRUD, list, search
+- `tests/test_search.py` (3 tests) — search found/empty
+- `tests/test_text_parser.py` (3 tests) — parse_and_save, parse_only
+
+**Trade-offs:**
+- AI client and repository are fully mocked — tests don't need PostgreSQL or OpenRouter
+- Bot handlers not tested (tight coupling / inline dependency creation makes unit testing impractical without integration infra)
+- No pgvector index tests (requires real PostgreSQL)
+
+**PR:** https://github.com/honeywagonoperator/cookhelp/pull/30 (draft)
+
+
+## 2026-06-19 — #15: Free input mode / intent routing
+
+**Action:** Implemented full free input flow — text → LLM classify intent → route to appropriate handler.
+
+**Files changed:**
+- `app/bot/handlers/free_input.py` — Rewrote: classify_intent → routing to ADD/SEARCH/SHOW/EDIT/LIST/HELP
+- `tests/test_free_input.py` — 6 tests for intent classification of all types
+
+**Routing map:**
+- ADD_RECIPE → URL check → website or text parser
+- SEARCH_RECIPE → SearchService.search → inline buttons
+- SHOW_RECIPE → search → show card of first result
+- EDIT_RECIPE → search → pre-fill edit FSM with recipe_id
+- LIST_RECIPES → _show_recipe_page (pagination)
+- HELP → help text
+- UNKNOWN/low confidence → prompt to be more specific
+
+**Trade-offs:**
+- EDIT_RECIPE always picks the first search result rather than asking which recipe to edit
+- Last recipe is used as fallback if search returns nothing
+- Classify intent prompt updated implicitly (already had all intents)
+
+**PR:** https://github.com/honeywagonoperator/cookhelp/pull/31 (draft)

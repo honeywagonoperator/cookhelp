@@ -19,20 +19,25 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Starting application...")
-    await init_db()
-    logger.info("Database initialized")
+    try:
+        await init_db()
+        logger.info("Database initialized")
 
-    from app.bot import bot, dp, start_bot, stop_bot
+        from app.bot import bot, dp, start_bot, stop_bot
 
-    await start_bot()
-    logger.info("Bot started")
+        await start_bot()
+        logger.info("Bot started")
 
-    polling_task = None
-    if not settings.bot_use_webhook:
-        polling_task = asyncio.create_task(dp.start_polling(bot))
-        logger.info("Polling started")
+        polling_task = None
+        if not settings.bot_use_webhook:
+            polling_task = asyncio.create_task(dp.start_polling(bot))
+            logger.info("Polling started")
 
-    yield
+        yield
+    except Exception as e:
+        logger.exception("Failed to start application: %s", e)
+        yield
+        return
 
     if polling_task:
         polling_task.cancel()
@@ -73,6 +78,21 @@ async def db_health_check() -> JSONResponse:
         logger.error(f"Database health check failed: {e}")
         return JSONResponse(
             {"status": "error", "database": "disconnected", "error": str(e)},
+            status_code=503,
+        )
+
+
+@app.get("/health/ai")
+async def ai_health_check() -> JSONResponse:
+    try:
+        from app.ai.client import get_ai_client
+        client = get_ai_client()
+        await client.create_embedding("test")
+        return JSONResponse({"status": "ok", "ai": "connected"})
+    except Exception as e:
+        logger.exception("AI health check failed")
+        return JSONResponse(
+            {"status": "error", "ai": "disconnected", "error": str(e)},
             status_code=503,
         )
 

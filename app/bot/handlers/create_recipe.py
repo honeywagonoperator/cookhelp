@@ -51,7 +51,7 @@ async def create_recipe_input(message: Message, state: FSMContext) -> None:
                 reply_markup=main_menu,
             )
     except Exception as e:
-        logger.error(f"Error processing recipe input: {e}")
+        logger.exception("Error processing recipe input: %s", e)
         await message.answer(
             "❌ Произошла ошибка при обработке. Попробуйте ещё раз.",
             reply_markup=main_menu,
