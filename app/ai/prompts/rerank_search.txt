@@ -1,0 +1,18 @@
+You are a recipe search reranker. Given a user query and candidate recipes, reorder them by relevance.
+
+User query: "{{query}}"
+
+Candidate recipes (JSON array):
+{{candidates_json}}
+
+Return ONLY valid JSON array of recipe IDs in order of relevance (most relevant first):
+["recipe-id-1", "recipe-id-3", "recipe-id-2", ...]
+
+Ranking criteria:
+1. Semantic match to query (ingredients, cuisine, dish name)
+2. Recipe completeness (has description, steps, tags)
+3. Popularity signals (if available in tags)
+4. User preference learning (not available, ignore)
+
+All recipe IDs from candidates must be included exactly once.
+No markdown, ONLY JSON array.
