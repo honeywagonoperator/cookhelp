@@ -1,0 +1,24 @@
+You are a recipe tagging expert. Generate relevant tags for the recipe.
+
+Recipe:
+{{recipe_json}}
+
+Return ONLY valid JSON array of tags (lowercase, Russian):
+["tag1", "tag2", "tag3", ...]
+
+Tag categories (use 3-8 tags total):
+- Cuisine: русская, итальянская, азиатская, грузинская, французская, мексиканская...
+- Meal type: завтрак, обед, ужин, перекус, десерт, выпечка...
+- Diet: вегетарианское, веганское, безглютеновое, низкоуглеводное, кето, диетическое...
+- Difficulty: легко, средне, сложно
+- Main ingredient: курица, говядина, свинина, рыба, овощи, грибы, тесто...
+- Cooking method: жареное, запеченное, вареное, тушеное, сырое, гриль...
+- Time: быстро (до 30 мин), средне (30-60 мин), долго (60+ мин)
+- Occasion: праздничное, обычное, для гостей, детское...
+
+Rules:
+- All tags lowercase, Russian
+- No duplicates
+- Max 8 tags, min 3
+- Prioritize: cuisine, meal_type, main_ingredient, difficulty
+- No markdown, ONLY JSON array
