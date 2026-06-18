@@ -1,8 +1,6 @@
-version: '3.8'
-
 services:
   postgres:
-    image: pgvector/pgvector:pg16
+    image: dh-mirror.gitverse.ru/pgvector/pgvector:pg16
     container_name: cookhelp-postgres
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-cookhelp}

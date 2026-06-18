@@ -45,6 +45,7 @@ UX/Флоу: `telegram-userflow.md`
 
 → записать в `SESSION.md`
 
+
 **Новый запрос / идея / фича:**
 - создать issue с Acceptance Criteria, labels, assignee
 
@@ -54,7 +55,7 @@ UX/Флоу: `telegram-userflow.md`
 
 ### 2. Создание feature branch + Draft PR
 
-`load skill github`:
+обязательно `load skill github`:
 
 ```
 ({ branch: "feat/<name>", from_branch: "main" })

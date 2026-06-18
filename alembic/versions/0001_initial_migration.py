@@ -6,7 +6,8 @@ Create Date: 2026-06-18
 """
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects.postgresql import UUID, JSONB, VECTOR
+from sqlalchemy.dialects.postgresql import UUID, JSONB
+from pgvector.sqlalchemy import Vector
 import uuid
 
 revision = '0001'
@@ -27,7 +28,7 @@ def upgrade() -> None:
         sa.Column('steps', JSONB, nullable=False, default=list),
         sa.Column('tags', JSONB, nullable=False, default=list),
         sa.Column('source', JSONB, nullable=False, default=dict),
-        sa.Column('embedding', VECTOR(1024), nullable=True),
+        sa.Column('embedding', Vector(1024), nullable=True),
         sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
         sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.func.now(), onupdate=sa.func.now(), nullable=False),
     )
