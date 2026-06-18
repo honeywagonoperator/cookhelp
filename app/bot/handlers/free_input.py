@@ -51,7 +51,8 @@ async def free_input_handle(message: Message, state: FSMContext) -> None:
         logger.info("Free input intent", extra={"intent": intent, "confidence": confidence})
 
         if confidence < 0.3:
-            await progress.edit_text(
+            await progress.delete()
+            await message.answer(
                 "🤔 Не совсем понял ваш запрос. Попробуйте:\n"
                 "• Добавить рецепт текстом или ссылкой\n"
                 "• Найти рецепт по названию или ингредиентам\n"
@@ -73,7 +74,8 @@ async def free_input_handle(message: Message, state: FSMContext) -> None:
         elif intent == "HELP":
             await _handle_help(message, progress)
         else:
-            await progress.edit_text(
+            await progress.delete()
+            await message.answer(
                 "🤔 Не совсем понял ваш запрос. Попробуйте:\n"
                 "• Добавить рецепт текстом или ссылкой\n"
                 "• Найти рецепт по названию или ингредиентам\n"
@@ -82,7 +84,8 @@ async def free_input_handle(message: Message, state: FSMContext) -> None:
             )
     except Exception as e:
         logger.error(f"Free input error: {e}")
-        await progress.edit_text(
+        await progress.delete()
+        await message.answer(
             "❌ Ошибка при обработке запроса. Попробуйте ещё раз.",
             reply_markup=main_menu,
         )
@@ -123,7 +126,8 @@ async def _handle_search(message: Message, progress: Message, query: str) -> Non
         results = await search_service.search(query)
 
     if not results:
-        await progress.edit_text(
+        await progress.delete()
+        await message.answer(
             "😕 Ничего не найдено. Попробуйте другой запрос.",
             reply_markup=main_menu,
         )
@@ -154,7 +158,8 @@ async def _handle_show_recipe(message: Message, progress: Message, query: str) -
         results = await search_service.search(query)
 
     if not results:
-        await progress.edit_text(
+        await progress.delete()
+        await message.answer(
             f"😕 Рецепт «{query}» не найден. Попробуйте другой запрос.",
             reply_markup=main_menu,
         )
@@ -190,7 +195,8 @@ async def _handle_edit_recipe(message: Message, state: FSMContext, progress: Mes
         all_recipes = await repository.get_all(limit=50)
 
     if not all_recipes:
-        await progress.edit_text(
+        await progress.delete()
+        await message.answer(
             "📭 Нет рецептов для редактирования. Сначала добавьте рецепт.",
             reply_markup=main_menu,
         )
@@ -225,9 +231,34 @@ async def _handle_edit_recipe(message: Message, state: FSMContext, progress: Mes
 
 
 async def _handle_list_recipes(message: Message, progress: Message) -> None:
-    from app.bot.handlers.recipe_actions import _show_recipe_page
     await progress.delete()
-    await _show_recipe_page(message, page=1)
+
+    async with async_session_maker() as session:
+        repository = RecipeRepository(session)
+        recipes = await repository.get_all(limit=20)
+        total = await repository.count()
+
+    if not recipes:
+        await message.answer(
+            "📭 У вас пока нет рецептов.\n\nНажмите «Создать рецепт» чтобы добавить первый!",
+            reply_markup=main_menu,
+        )
+        return
+
+    text = f"📋 <b>Мои рецепты</b> ({total})\n\n"
+    buttons = []
+
+    for r in recipes:
+        text += f"• {r.title}\n"
+        buttons.append([InlineKeyboardButton(
+            text=f"📖 {r.title}",
+            callback_data=f"recipe:{r.id}",
+        )])
+
+    await message.answer(
+        text,
+        reply_markup=InlineKeyboardMarkup(inline_keyboard=buttons),
+    )
 
 
 async def _handle_help(message: Message, progress: Message) -> None:
@@ -247,4 +278,5 @@ async def _handle_help(message: Message, progress: Message) -> None:
         "• Покажи мои рецепты\n"
         "• Сделай рецепт менее острым"
     )
-    await progress.edit_text(help_text, reply_markup=main_menu)
+    await progress.delete()
+    await message.answer(help_text, reply_markup=main_menu)

@@ -4,22 +4,25 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from app.ai.client import AIResponse
-from app.schemas.recipe import RecipeSource
 
 
 @pytest.fixture
-def mock_ai_intent_client(mock_ai_client: AsyncMock) -> AsyncMock:
-    mock_ai_client.chat_completion = AsyncMock(return_value=AIResponse(
-        content=json.dumps({
-            "intent": "UNKNOWN",
-            "confidence": 0.0,
-            "entities": {},
-        }),
+def mock_ai_client(monkeypatch: pytest.MonkeyPatch) -> AsyncMock:
+    client = AsyncMock()
+    client.chat_completion = AsyncMock(return_value=AIResponse(
+        content='{"intent": "UNKNOWN", "confidence": 0.0, "entities": {}}',
         tokens_used=10,
         model="test-model",
         finish_reason="stop",
     ))
-    return mock_ai_client
+    client.create_embedding = AsyncMock(return_value=[0.1] * 128)
+
+    import app.ai.service as ai_service_module
+    import app.ai.client as ai_client_module
+    monkeypatch.setattr(ai_client_module, "get_ai_client", lambda: client)
+    monkeypatch.setattr(ai_service_module, "get_ai_client", lambda: client)
+
+    return client
 
 
 class TestFreeInputIntentClassification:
@@ -120,37 +123,3 @@ class TestFreeInputIntentClassification:
         service = AIService()
         result = await service.classify_intent("привет")
         assert result["intent"] == "UNKNOWN"
-
-
-class TestFreeInputRoutingLogic:
-    @pytest.fixture
-    def patch_parsers(self):
-        with (
-            patch("app.bot.handlers.free_input.process_text_recipe") as mock_text,
-            patch("app.bot.handlers.free_input.process_url_recipe") as mock_url,
-            patch("app.bot.handlers.free_input.SearchService") as mock_search,
-            patch("app.bot.handlers.free_input.async_session_maker") as mock_session,
-            patch("app.bot.handlers.free_input.AIService") as mock_ai,
-        ):
-            mock_ai_instance = AsyncMock()
-            mock_ai.return_value = mock_ai_instance
-
-            mock_session.return_value.__aenter__.return_value = AsyncMock()
-            mock_repo = AsyncMock()
-            mock_session.return_value.__aenter__.return_value = mock_repo
-
-            mock_search_instance = AsyncMock()
-            mock_search.return_value = mock_search_instance
-
-            yield {
-                "text_parser": mock_text,
-                "url_parser": mock_url,
-                "search_service": mock_search_instance,
-                "ai_service": mock_ai_instance,
-            }
-
-    @pytest.fixture
-    def patch_list(self):
-        from app.bot.handlers import recipe_actions
-        with patch.object(recipe_actions, "_show_recipe_page") as mock:
-            yield mock
