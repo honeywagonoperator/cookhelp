@@ -1,7 +1,6 @@
 import logging
 from typing import Any
 
-from app.ai.service import get_ai_service
 from app.repositories.recipe import RecipeRepository
 from app.services.recipe import RecipeService
 
@@ -11,16 +10,16 @@ logger = logging.getLogger(__name__)
 class TextRecipeParser:
     def __init__(self, recipe_service: RecipeService):
         self.recipe_service = recipe_service
-        self.ai_service = get_ai_service()
 
     async def parse_and_save(self, text: str) -> dict[str, Any]:
         logger.info("Parsing recipe from text", extra={"text_length": len(text)})
 
-        recipe_create = await self.ai_service.extract_recipe(text)
+        ai = self.recipe_service.ai_service
+        recipe_create = await ai.extract_recipe(text)
         logger.info("Recipe extracted", extra={"title": recipe_create.title})
 
         recipe_dict = recipe_create.model_dump()
-        normalized = await self.ai_service.normalize_recipe(recipe_dict)
+        normalized = await ai.normalize_recipe(recipe_dict)
         logger.info("Recipe normalized", extra={"title": normalized.title})
 
         recipe = await self.recipe_service.create_recipe(normalized)
