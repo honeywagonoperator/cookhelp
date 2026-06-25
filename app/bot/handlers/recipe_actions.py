@@ -8,9 +8,7 @@ from aiogram.types import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
     Message,
-    ReplyKeyboardRemove,
 )
-from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from app.bot.helpers import build_recipe_keyboard, build_steps_keyboard, format_recipe_card
 from app.bot.keyboards import main_menu
@@ -113,8 +111,7 @@ async def edit_recipe_apply(message: Message, state: FSMContext) -> None:
                 await message.answer("❌ Рецепт не найден.", reply_markup=main_menu)
                 return
 
-            import json
-            recipe_dict = json.loads(recipe.model_dump_json())
+            recipe_dict = recipe.model_dump()
             edited = await ai_service.edit_recipe(recipe_dict, instruction)
             normalized = await ai_service.normalize_recipe(edited)
 
