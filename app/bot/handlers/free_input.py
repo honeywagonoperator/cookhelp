@@ -5,6 +5,7 @@ from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, ReplyKeyboardRemove
 
+from app.bot.helpers import build_search_keyboard, format_recipe_card
 from app.bot.keyboards import main_menu
 from app.bot.states import FreeInputStates, EditRecipeStates
 from app.database.connection import async_session_maker
@@ -133,17 +134,10 @@ async def _handle_search(message: Message, progress: Message, query: str) -> Non
         )
         return
 
-    buttons = []
-    for i, r in enumerate(results[:10]):
-        buttons.append([InlineKeyboardButton(
-            text=f"{i + 1}. {r.title}",
-            callback_data=f"recipe:{r.id}",
-        )])
-
     await progress.edit_text("📋 <b>Результаты поиска:</b>")
     await message.answer(
         "⬆️ Результаты выше. Выберите рецепт для просмотра.",
-        reply_markup=InlineKeyboardMarkup(inline_keyboard=buttons),
+        reply_markup=build_search_keyboard(results),
     )
 
 
@@ -166,12 +160,7 @@ async def _handle_show_recipe(message: Message, progress: Message, query: str) -
         return
 
     recipe = results[0]
-    text = (
-        f"🍽 <b>{recipe.title}</b>\n\n"
-        f"{recipe.description or ''}\n\n"
-        f"<b>Ингредиенты:</b>\n" + "\n".join(f"• {i}" for i in recipe.ingredients) + "\n\n"
-        f"<b>Тэги:</b> {', '.join(recipe.tags) if recipe.tags else '—'}"
-    )
+    text = format_recipe_card(recipe)
 
     buttons = InlineKeyboardMarkup(inline_keyboard=[
         [

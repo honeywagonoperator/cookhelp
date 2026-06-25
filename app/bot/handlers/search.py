@@ -3,8 +3,9 @@ import logging
 from aiogram import Router, F
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, ReplyKeyboardRemove
+from aiogram.types import Message, ReplyKeyboardRemove
 
+from app.bot.helpers import build_search_keyboard
 from app.bot.keyboards import main_menu
 from app.bot.states import SearchStates
 from app.database.connection import async_session_maker
@@ -56,16 +57,9 @@ async def search_query(message: Message, state: FSMContext) -> None:
             )
             return
 
-        buttons = []
-        for i, r in enumerate(results[:10]):
-            buttons.append([InlineKeyboardButton(
-                text=f"{i + 1}. {r.title}",
-                callback_data=f"recipe:{r.id}",
-            )])
-
         await message.answer(
             "📋 <b>Результаты поиска:</b>",
-            reply_markup=InlineKeyboardMarkup(inline_keyboard=buttons),
+            reply_markup=build_search_keyboard(results),
         )
 
     except Exception as e:

@@ -190,3 +190,16 @@ Need to test `nvidia/llama-nemotron-embed-vl-1b-v2:free` via OpenRouter to confi
 - SearchService удаляется полностью, search() переходит в RecipeService (так логичнее, search — часть бизнес-логики рецептов)
 - RecipeMapper как отдельный класс — чище, чем статические методы в RecipeService
 - Вынос форматирования рецепта в helper — пока не трогаем (issue #34 это покрывает)
+
+**PR:** https://github.com/honeywagonoperator/cookhelp/pull/39 — merged
+
+
+## 2026-06-25 — #34: Убрать дублирование UI-логики в хендлерах
+
+**Action:** Feature branch `feat/dedup-ui-logic`. Вынести форматирование рецепта и построение клавиатуры поиска в `app/bot/helpers.py`.
+
+**Rationale:** Устранить дублирование кода отображения рецепта (free_input.py + recipe_actions.py) и поиска (free_input.py + search.py).
+
+**Trade-offs:**
+- Helpers как статические функции — проще, чем отдельный сервис
+- Два хелпера вместо одного — разделение ответственности (format vs keyboard build)
