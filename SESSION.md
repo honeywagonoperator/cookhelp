@@ -216,6 +216,13 @@ Need to test `nvidia/llama-nemotron-embed-vl-1b-v2:free` via OpenRouter to confi
 **PR:** https://github.com/honeywagonoperator/cookhelp/pull/41 — merged
 
 
+## 2026-06-25 — #44: create_embedding перевести на OpenAI SDK
+
+**Action:** Feature branch `feat/embedding-sdk`. Заменить raw HTTP в `create_embedding()` на `client.embeddings.create()`.
+
+**Rationale:** Консистентность с chat_completion, переиспользование connection pool, убрать connection churn.
+
+
 ## 2026-06-25 — #37: Улучшить обработку ошибок в парсерах и middlewares
 
 **Action:** Feature branch `feat/error-handling`. Улучшить обработку ошибок: кастомные исключения, понятные сообщения пользователю, удалить user_id=0.
