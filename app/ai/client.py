@@ -33,7 +33,6 @@ class OpenRouterClient:
             http_client=httpx.AsyncClient(timeout=60.0, trust_env=False),
         )
         
-        self.default_model = "nvidia/llama-nemotron-embed-vl-1b-v2:free"
         self.chat_model = "nex-agi/nex-n2-pro:free"
         self.embedding_model = settings.embedding_model
 

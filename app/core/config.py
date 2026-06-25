@@ -1,4 +1,5 @@
 import logging
+from typing import Literal
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field, field_validator
@@ -39,7 +40,7 @@ class Settings(BaseSettings):
         if v.upper() not in valid:
             raise ValueError(f"Invalid log level: {v}. Valid: {', '.join(valid)}")
         return v.upper()
-    environment: str = Field(default="development", validation_alias="ENVIRONMENT")
+    environment: Literal["development", "test", "production"] = Field(default="development", validation_alias="ENVIRONMENT")
 
     # Embedding
     embedding_dimension: int = Field(default=2048, validation_alias="EMBEDDING_DIMENSION")
