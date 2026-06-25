@@ -30,7 +30,7 @@ def mock_ai_client(monkeypatch: pytest.MonkeyPatch) -> AsyncMock:
         model="test-model",
         finish_reason="stop",
     ))
-    client.create_embedding = AsyncMock(return_value=[0.1] * 128)
+    client.create_embedding = AsyncMock(return_value=[0.1] * 2048)
 
     import app.ai.service as ai_service_module
     import app.ai.client as ai_client_module
@@ -80,7 +80,7 @@ def sample_recipe_response(sample_recipe_id: UUID) -> RecipeResponse:
         steps=["Нарезать овощи", "Сварить бульон", "Добавить овощи"],
         tags=["суп", "русская кухня"],
         source={"type": "text"},
-        embedding=[0.1] * 128,
+        embedding=[0.1] * 2048,
         created_at="2026-06-19T10:00:00",
         updated_at="2026-06-19T10:00:00",
     )

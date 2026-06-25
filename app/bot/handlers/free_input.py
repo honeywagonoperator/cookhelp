@@ -9,7 +9,7 @@ from app.bot.keyboards import main_menu
 from app.bot.states import FreeInputStates, EditRecipeStates
 from app.database.connection import async_session_maker
 from app.repositories.recipe import RecipeRepository
-from app.services.search import SearchService
+from app.services.recipe import RecipeService
 
 logger = logging.getLogger(__name__)
 
@@ -41,9 +41,9 @@ async def free_input_handle(message: Message, state: FSMContext) -> None:
     await state.clear()
 
     try:
-        from app.ai.service import AIService
+        from app.ai.service import get_ai_service
 
-        ai_service = AIService()
+        ai_service = get_ai_service()
         intent_data = await ai_service.classify_intent(text)
         intent = intent_data.get("intent", "UNKNOWN")
         confidence = intent_data.get("confidence", 0)
@@ -118,12 +118,12 @@ async def _handle_add_recipe(message: Message, progress: Message, text: str) -> 
 async def _handle_search(message: Message, progress: Message, query: str) -> None:
     await progress.edit_text(f"🔍 Ищу: «{query}»...")
 
-    from app.ai.service import AIService
-    ai_service = AIService()
+    from app.ai.service import get_ai_service
+    ai_service = get_ai_service()
     async with async_session_maker() as session:
         repository = RecipeRepository(session)
-        search_service = SearchService(repository, ai_service)
-        results = await search_service.search(query)
+        service = RecipeService(repository, ai_service)
+        results = await service.search(query)
 
     if not results:
         await progress.delete()
@@ -150,12 +150,12 @@ async def _handle_search(message: Message, progress: Message, query: str) -> Non
 async def _handle_show_recipe(message: Message, progress: Message, query: str) -> None:
     await progress.edit_text(f"🔍 Ищу рецепт «{query}»...")
 
-    from app.ai.service import AIService
-    ai_service = AIService()
+    from app.ai.service import get_ai_service
+    ai_service = get_ai_service()
     async with async_session_maker() as session:
         repository = RecipeRepository(session)
-        search_service = SearchService(repository, ai_service)
-        results = await search_service.search(query)
+        service = RecipeService(repository, ai_service)
+        results = await service.search(query)
 
     if not results:
         await progress.delete()
@@ -188,8 +188,8 @@ async def _handle_show_recipe(message: Message, progress: Message, query: str) -
 async def _handle_edit_recipe(message: Message, state: FSMContext, progress: Message, instruction: str) -> None:
     await progress.edit_text("🔍 Ищу рецепт для редактирования...")
 
-    from app.ai.service import AIService
-    ai_service = AIService()
+    from app.ai.service import get_ai_service
+    ai_service = get_ai_service()
     async with async_session_maker() as session:
         repository = RecipeRepository(session)
         all_recipes = await repository.get_all(limit=50)
@@ -204,8 +204,8 @@ async def _handle_edit_recipe(message: Message, state: FSMContext, progress: Mes
 
     async with async_session_maker() as session:
         repository = RecipeRepository(session)
-        search_service = SearchService(repository, ai_service)
-        results = await search_service.search(instruction)
+        service = RecipeService(repository, ai_service)
+        results = await service.search(instruction)
 
     if not results:
         last = all_recipes[-1]
