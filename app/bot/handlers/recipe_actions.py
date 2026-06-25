@@ -12,6 +12,7 @@ from aiogram.types import (
 )
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
+from app.bot.helpers import build_recipe_keyboard, build_steps_keyboard, format_recipe_card
 from app.bot.keyboards import main_menu
 from app.bot.states import EditRecipeStates
 from app.database.connection import async_session_maker
@@ -36,23 +37,8 @@ async def show_recipe(callback: CallbackQuery) -> None:
         await callback.message.edit_text("❌ Рецепт не найден.")
         return
 
-    text = (
-        f"🍽 <b>{recipe.title}</b>\n\n"
-        f"{recipe.description or ''}\n\n"
-        f"<b>Ингредиенты:</b>\n" + "\n".join(f"• {i}" for i in recipe.ingredients) + "\n\n"
-        f"<b>Тэги:</b> {', '.join(recipe.tags) if recipe.tags else '—'}"
-    )
-
-    buttons = InlineKeyboardMarkup(inline_keyboard=[
-        [
-            InlineKeyboardButton(text="👁 Шаги", callback_data=f"steps:{recipe.id}"),
-            InlineKeyboardButton(text="✏️ Правка", callback_data=f"edit:{recipe.id}"),
-        ],
-        [
-            InlineKeyboardButton(text="🗑 Удалить", callback_data=f"delete:{recipe.id}"),
-        ],
-        [InlineKeyboardButton(text="🔙 Назад", callback_data="back_to_menu")],
-    ])
+    text = format_recipe_card(recipe)
+    buttons = build_recipe_keyboard(str(recipe.id))
 
     await callback.message.edit_text(text, reply_markup=buttons)
     await callback.answer()
@@ -77,11 +63,7 @@ async def show_steps(callback: CallbackQuery) -> None:
 
     text = f"🍽 <b>{recipe.title}</b> — пошаговый рецепт\n\n{steps_text}"
 
-    buttons = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="✏️ Редактировать", callback_data=f"edit:{recipe.id}")],
-        [InlineKeyboardButton(text="🗑 Удалить", callback_data=f"delete:{recipe.id}")],
-        [InlineKeyboardButton(text="🔙 Назад", callback_data=f"recipe:{recipe.id}")],
-    ])
+    buttons = build_steps_keyboard(str(recipe.id))
 
     await callback.message.edit_text(text, reply_markup=buttons)
     await callback.answer()
