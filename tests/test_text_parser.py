@@ -3,7 +3,6 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 
 from app.parsers.text import TextRecipeParser
-from app.schemas.recipe import RecipeCreate, RecipeSource
 
 
 class TestTextRecipeParser:
@@ -30,16 +29,6 @@ class TestTextRecipeParser:
         assert result["success"] is True
         assert "Борщ" in result["message"]
         mock_recipe_service.create_recipe.assert_awaited_once()
-
-    async def test_parse_only(
-        self,
-        parser: TextRecipeParser,
-    ):
-        result = await parser.parse_only("рецепт борща")
-
-        assert isinstance(result, RecipeCreate)
-        assert result.title is not None
-        assert len(result.ingredients) > 0
 
     async def test_parse_and_save_failure(
         self,

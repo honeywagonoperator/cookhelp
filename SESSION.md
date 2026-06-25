@@ -203,3 +203,12 @@ Need to test `nvidia/llama-nemotron-embed-vl-1b-v2:free` via OpenRouter to confi
 **Trade-offs:**
 - Helpers как статические функции — проще, чем отдельный сервис
 - Два хелпера вместо одного — разделение ответственности (format vs keyboard build)
+
+**PR:** https://github.com/honeywagonoperator/cookhelp/pull/40 — merged
+
+
+## 2026-06-25 — #36: Почистить dead code и неиспользуемые зависимости
+
+**Action:** Feature branch `feat/cleanup-dead-code`. Удалить неиспользуемый код и зависимости.
+
+**Rationale:** Уменьшить поверхность кода, ускорить установку зависимостей.
