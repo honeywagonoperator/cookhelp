@@ -3,7 +3,6 @@ from typing import Any
 
 from app.ai.service import get_ai_service
 from app.repositories.recipe import RecipeRepository
-from app.schemas.recipe import RecipeCreate
 from app.services.recipe import RecipeService
 
 logger = logging.getLogger(__name__)
@@ -32,11 +31,6 @@ class TextRecipeParser:
             "recipe": recipe,
             "message": f"Рецепт «{recipe.title}» успешно сохранён!",
         }
-
-    async def parse_only(self, text: str) -> RecipeCreate:
-        recipe_create = await self.ai_service.extract_recipe(text)
-        normalized = await self.ai_service.normalize_recipe(recipe_create.model_dump())
-        return normalized
 
 
 async def process_text_recipe(text: str) -> dict[str, Any]:
