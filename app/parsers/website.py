@@ -4,8 +4,9 @@ from typing import Any
 
 import trafilatura
 
-from app.ai.service import AIService, get_ai_service
+from app.ai.service import get_ai_service
 from app.database.connection import async_session_maker
+from app.parsers.exceptions import URLFetchError, URLParseError
 from app.repositories.recipe import RecipeRepository
 from app.services.recipe import RecipeService
 
@@ -16,7 +17,7 @@ class WebsiteParser:
     async def get_content(self, url: str) -> str:
         downloaded = await asyncio.to_thread(trafilatura.fetch_url, url)
         if not downloaded:
-            raise ValueError(f"Failed to fetch URL: {url}")
+            raise URLFetchError(url)
 
         text = await asyncio.to_thread(
             trafilatura.extract,
@@ -28,7 +29,7 @@ class WebsiteParser:
         )
 
         if not text or len(text.strip()) < 50:
-            raise ValueError(f"Could not extract meaningful content from {url}")
+            raise URLParseError(url)
 
         logger.info("Content extracted from URL", extra={"url": url, "length": len(text)})
         return text

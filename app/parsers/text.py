@@ -13,8 +13,8 @@ class TextRecipeParser:
         self.recipe_service = recipe_service
         self.ai_service = get_ai_service()
 
-    async def parse_and_save(self, text: str, user_id: int) -> dict[str, Any]:
-        logger.info("Parsing recipe from text", extra={"user_id": user_id, "text_length": len(text)})
+    async def parse_and_save(self, text: str) -> dict[str, Any]:
+        logger.info("Parsing recipe from text", extra={"text_length": len(text)})
 
         recipe_create = await self.ai_service.extract_recipe(text)
         logger.info("Recipe extracted", extra={"title": recipe_create.title})
@@ -42,6 +42,6 @@ async def process_text_recipe(text: str) -> dict[str, Any]:
         repository = RecipeRepository(session)
         service = RecipeService(repository, ai_service)
         parser = TextRecipeParser(service)
-        result = await parser.parse_and_save(text, 0)
+        result = await parser.parse_and_save(text)
         await session.commit()
         return result
