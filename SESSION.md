@@ -212,3 +212,10 @@ Need to test `nvidia/llama-nemotron-embed-vl-1b-v2:free` via OpenRouter to confi
 **Action:** Feature branch `feat/cleanup-dead-code`. Удалить неиспользуемый код и зависимости.
 
 **Rationale:** Уменьшить поверхность кода, ускорить установку зависимостей.
+
+**PR:** https://github.com/honeywagonoperator/cookhelp/pull/41 — merged
+
+
+## 2026-06-25 — #37: Улучшить обработку ошибок в парсерах и middlewares
+
+**Action:** Feature branch `feat/error-handling`. Улучшить обработку ошибок: кастомные исключения, понятные сообщения пользователю, удалить user_id=0.

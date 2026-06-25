@@ -7,6 +7,7 @@ from aiogram.types import Message, ReplyKeyboardRemove
 
 from app.bot.keyboards import main_menu
 from app.bot.states import CreateRecipeStates
+from app.parsers.exceptions import URLFetchError, URLParseError
 from app.parsers.text import process_text_recipe
 from app.parsers.website import process_url_recipe
 
@@ -50,6 +51,13 @@ async def create_recipe_input(message: Message, state: FSMContext) -> None:
                 f"❌ {result.get('message', 'Не удалось обработать запрос.')}",
                 reply_markup=main_menu,
             )
+    except (URLFetchError, URLParseError) as e:
+        logger.warning("URL processing error: %s", e)
+        await message.answer(
+            f"❌ Не удалось получить рецепт с сайта.\n\n"
+            f"Проверьте ссылку или попробуйте ввести рецепт текстом.",
+            reply_markup=main_menu,
+        )
     except Exception as e:
         logger.exception("Error processing recipe input: %s", e)
         await message.answer(

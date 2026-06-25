@@ -24,7 +24,7 @@ class TestTextRecipeParser:
         parser: TextRecipeParser,
         mock_recipe_service: AsyncMock,
     ):
-        result = await parser.parse_and_save("рецепт борща", user_id=123)
+        result = await parser.parse_and_save("рецепт борща")
 
         assert result["success"] is True
         assert "Борщ" in result["message"]
@@ -42,4 +42,4 @@ class TestTextRecipeParser:
         parser.recipe_service = mock_recipe_service
 
         with pytest.raises(ValueError):
-            await parser.parse_and_save("рецепт", user_id=1)
+            await parser.parse_and_save("рецепт")

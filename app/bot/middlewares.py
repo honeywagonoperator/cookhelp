@@ -1,8 +1,9 @@
 import logging
-import traceback
 
 from aiogram import BaseMiddleware
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import CallbackQuery, Message
+
+from app.bot.keyboards import main_menu
 
 logger = logging.getLogger(__name__)
 
@@ -27,12 +28,8 @@ class ErrorHandlingMiddleware(BaseMiddleware):
             user = event.from_user
             logger.exception("Unhandled error from user %s (%s): %s", user.full_name, user.id, e)
 
-            state = data.get("state")
-            if state:
-                await state.clear()
-
             text = "❌ Произошла ошибка. Пожалуйста, попробуйте ещё раз."
             if isinstance(event, CallbackQuery):
                 await event.answer(text, show_alert=True)
             else:
-                await event.answer(text)
+                await event.answer(text, reply_markup=main_menu)
