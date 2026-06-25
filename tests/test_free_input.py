@@ -1,28 +1,9 @@
 import json
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock
 
 import pytest
 
 from app.ai.client import AIResponse
-
-
-@pytest.fixture
-def mock_ai_client(monkeypatch: pytest.MonkeyPatch) -> AsyncMock:
-    client = AsyncMock()
-    client.chat_completion = AsyncMock(return_value=AIResponse(
-        content='{"intent": "UNKNOWN", "confidence": 0.0, "entities": {}}',
-        tokens_used=10,
-        model="test-model",
-        finish_reason="stop",
-    ))
-    client.create_embedding = AsyncMock(return_value=[0.1] * 128)
-
-    import app.ai.service as ai_service_module
-    import app.ai.client as ai_client_module
-    monkeypatch.setattr(ai_client_module, "get_ai_client", lambda: client)
-    monkeypatch.setattr(ai_service_module, "get_ai_client", lambda: client)
-
-    return client
 
 
 class TestFreeInputIntentClassification:

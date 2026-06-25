@@ -9,7 +9,7 @@ from app.bot.keyboards import main_menu
 from app.bot.states import SearchStates
 from app.database.connection import async_session_maker
 from app.repositories.recipe import RecipeRepository
-from app.services.search import SearchService
+from app.services.recipe import RecipeService
 
 logger = logging.getLogger(__name__)
 
@@ -41,13 +41,13 @@ async def search_query(message: Message, state: FSMContext) -> None:
     await message.answer(f"🔍 Ищу рецепты по запросу: \"{query}\"...")
 
     try:
-        from app.ai.service import AIService
+        from app.ai.service import get_ai_service
 
-        ai_service = AIService()
+        ai_service = get_ai_service()
         async with async_session_maker() as session:
             repository = RecipeRepository(session)
-            search_service = SearchService(repository, ai_service)
-            results = await search_service.search(query)
+            service = RecipeService(repository, ai_service)
+            results = await service.search(query)
 
         if not results:
             await message.answer(

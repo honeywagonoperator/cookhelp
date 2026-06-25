@@ -118,9 +118,9 @@ async def edit_recipe_apply(message: Message, state: FSMContext) -> None:
     await message.answer("⏳ Редактирую рецепт...")
 
     try:
-        from app.ai.service import AIService
+        from app.ai.service import get_ai_service
 
-        ai_service = AIService()
+        ai_service = get_ai_service()
 
         async with async_session_maker() as session:
             repository = RecipeRepository(session)

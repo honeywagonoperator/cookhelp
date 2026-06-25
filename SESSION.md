@@ -174,3 +174,19 @@ Need to test `nvidia/llama-nemotron-embed-vl-1b-v2:free` via OpenRouter to confi
 - Classify intent prompt updated implicitly (already had all intents)
 
 **PR:** https://github.com/honeywagonoperator/cookhelp/pull/31 (draft)
+
+
+## 2026-06-25 — #33: DI container, merge SearchService into RecipeService, единый _to_response
+
+**Action:** Create feature branch `feat/di-refactoring` and implement:
+1. Убрать SearchService, перенести search() в RecipeService
+2. Создать единый RecipeMapper._to_response()
+3. Заменить все AIService() на get_ai_service()
+4. Вынести форматирование рецепта в хелпер
+
+**Rationale:** Устранить дублирование кода, привести DI к единому паттерну, уменьшить связанность.
+
+**Trade-offs:**
+- SearchService удаляется полностью, search() переходит в RecipeService (так логичнее, search — часть бизнес-логики рецептов)
+- RecipeMapper как отдельный класс — чище, чем статические методы в RecipeService
+- Вынос форматирования рецепта в helper — пока не трогаем (issue #34 это покрывает)

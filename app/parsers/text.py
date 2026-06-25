@@ -40,10 +40,10 @@ class TextRecipeParser:
 
 
 async def process_text_recipe(text: str) -> dict[str, Any]:
-    from app.ai.service import AIService
+    from app.ai.service import get_ai_service
     from app.database.connection import async_session_maker
 
-    ai_service = AIService()
+    ai_service = get_ai_service()
     async with async_session_maker() as session:
         repository = RecipeRepository(session)
         service = RecipeService(repository, ai_service)

@@ -3,7 +3,7 @@ from math import ceil
 from typing import Sequence
 from uuid import UUID
 
-from app.ai.service import AIService
+from app.ai.service import AIService, get_ai_service
 from app.models.recipe import Recipe
 from app.repositories.recipe import RecipeRepository
 from app.schemas.recipe import (
@@ -12,6 +12,7 @@ from app.schemas.recipe import (
     RecipeResponse,
     RecipeUpdate,
 )
+from app.services.mapper import RecipeMapper
 
 logger = logging.getLogger(__name__)
 
@@ -42,13 +43,13 @@ class RecipeService:
             source=data.source.model_dump(),
             embedding=data.embedding,
         )
-        return self._to_response(recipe)
+        return RecipeMapper.to_response(recipe)
 
     async def get_recipe(self, recipe_id: UUID) -> RecipeResponse | None:
         recipe = await self.repository.get_by_id(recipe_id)
         if not recipe:
             return None
-        return self._to_response(recipe)
+        return RecipeMapper.to_response(recipe)
 
     async def list_recipes(
         self,
@@ -60,7 +61,7 @@ class RecipeService:
         total = await self.repository.count()
 
         return PaginatedRecipes(
-            items=[self._to_response(r) for r in recipes],
+            items=[RecipeMapper.to_response(r) for r in recipes],
             total=total,
             page=page,
             page_size=page_size,
@@ -89,7 +90,7 @@ class RecipeService:
         recipe = await self.repository.update(recipe_id, **update_data)
         if not recipe:
             return None
-        return self._to_response(recipe)
+        return RecipeMapper.to_response(recipe)
 
     async def delete_recipe(self, recipe_id: UUID) -> bool:
         return await self.repository.delete(recipe_id)
@@ -100,18 +101,9 @@ class RecipeService:
         limit: int = 10,
     ) -> list[RecipeResponse]:
         recipes = await self.repository.search_by_embedding(embedding, limit)
-        return [self._to_response(r) for r in recipes]
+        return [RecipeMapper.to_response(r) for r in recipes]
 
-    def _to_response(self, recipe: Recipe) -> RecipeResponse:
-        return RecipeResponse(
-            id=recipe.id,
-            title=recipe.title,
-            description=recipe.description,
-            ingredients=recipe.ingredients,
-            steps=recipe.steps,
-            tags=recipe.tags,
-            source=recipe.source,
-            embedding=recipe.embedding,
-            created_at=recipe.created_at.isoformat(),
-            updated_at=recipe.updated_at.isoformat(),
-        )
+    async def search(self, query: str, limit: int = 10) -> list[RecipeResponse]:
+        ai = self.ai_service or get_ai_service()
+        embedding = await ai.generate_embedding(query)
+        return await self.search_by_embedding(embedding, limit)

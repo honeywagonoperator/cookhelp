@@ -1,4 +1,4 @@
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, MagicMock
 from uuid import UUID
 
 import pytest
@@ -171,10 +171,39 @@ class TestRecipeService:
             _mock_recipe(sample_recipe_create) for _ in range(2)
         ]
 
-        result = await recipe_service.search_by_embedding([0.1] * 128, limit=2)
+        result = await recipe_service.search_by_embedding([0.1] * 2048, limit=2)
 
         assert len(result) == 2
         mock_repository.search_by_embedding.assert_awaited_once()
+
+    async def test_search_with_ai(
+        self,
+        mock_repository: AsyncMock,
+        sample_recipe_create: RecipeCreate,
+        mock_ai_client: AsyncMock,
+    ):
+        mock_repository.search_by_embedding.return_value = [
+            _mock_recipe(sample_recipe_create) for _ in range(2)
+        ]
+        service = RecipeService(mock_repository, mock_ai_client)
+
+        result = await service.search("борщ")
+
+        assert len(result) == 2
+        mock_ai_client.generate_embedding.assert_awaited_once_with("борщ")
+        mock_repository.search_by_embedding.assert_awaited_once()
+
+    async def test_search_empty_with_ai(
+        self,
+        mock_repository: AsyncMock,
+        mock_ai_client: AsyncMock,
+    ):
+        mock_repository.search_by_embedding.return_value = []
+        service = RecipeService(mock_repository, mock_ai_client)
+
+        result = await service.search("несуществующий")
+
+        assert result == []
 
 
 def _mock_recipe(create_data: RecipeCreate, recipe_id: UUID | None = None) -> AsyncMock:
