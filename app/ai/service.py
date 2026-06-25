@@ -2,9 +2,8 @@ import json
 import logging
 from pathlib import Path
 from typing import Any
-from uuid import UUID
 
-from app.ai.client import AIResponse, get_ai_client
+from app.ai.client import get_ai_client
 from app.schemas.recipe import RecipeCreate, RecipeSource
 
 logger = logging.getLogger(__name__)
@@ -81,7 +80,7 @@ class AIService:
     async def edit_recipe(self, recipe: dict[str, Any], instruction: str) -> dict[str, Any]:
         prompt = self._get_prompt("edit_recipe")
         recipe_json = json.dumps(recipe, ensure_ascii=False)
-        user_content = prompt.replace("{{recipe_json}}", recipe_json).replace("{{instruction}}", instruction)
+        user_content = prompt.replace("{{recipe_json}}", recipe_json, 1).replace("{{instruction}}", instruction, 1)
         
         messages = [
             {"role": "system", "content": "You are a recipe editing expert. Return only JSON with modified recipe."},
@@ -119,7 +118,7 @@ class AIService:
             ensure_ascii=False,
         )
         
-        user_content = prompt.replace("{{query}}", query).replace("{{candidates_json}}", candidates_json)
+        user_content = prompt.replace("{{query}}", query, 1).replace("{{candidates_json}}", candidates_json, 1)
         
         messages = [
             {"role": "system", "content": "You are a recipe search reranker. Return only JSON array of recipe IDs."},
